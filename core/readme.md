@@ -92,6 +92,112 @@ Extending for production
 - Add unit tests for EventBus, repository implementations and use cases.
 
 License & attribution
+## Class diagram
+
+Below is a compact class diagram showing the main classes and relationships
+in this core package. There are two representations: an ASCII diagram for
+plain-text readers and a Mermaid diagram which GitHub may render.
+
+ASCII class diagram
+
+```
+ +------------------+        uses         +---------------------------+
+ |   CreateContact  |-------------------->|  ContactRepository (ABC)  |
+ |   UseCase        |                     |  + get_by_id(id)          |
+ | - repo           |                     |  + get_all()              |
+ | - bus            |                     |  + save(contact)          |
+ | + execute(...)   |                     |  + delete(id)             |
+ +------------------+                     +---------------------------+
+		  |                                           ^
+		  | publishes ContactCreated                   |
+		  v                                           |
+	+-------------+            implements             |
+	|  EventBus   |<----------------------------------+
+	| +subscribe  |                                     
+	| +publish    |                                     
+	+-------------+                                     
+
+  +-------------------------+        implements         +--------------------------+
+  | InMemoryContactRepository|------------------------->|   Contact (entity)       |
+  | - _store: dict          |                          |  - id, name, email, phone |
+  | + get_by_id(id)         |                          +--------------------------+
+  | + get_all()             |
+  | + save(contact)         |
+  | + delete(id)            |
+  +-------------------------+
+
+  Other use cases:
+  - GetAllContactsUseCase(repo) -> reads from ContactRepository
+  - DeleteContactUseCase(repo, bus) -> deletes and publishes ContactDeleted
+
+```
+
+Mermaid class diagram
+
+```mermaid
+classDiagram
+	class CreateContactUseCase {
+		- ContactRepository repo
+		- EventBus bus
+		+ execute(name, email, phone) Contact
+	}
+
+	class GetAllContactsUseCase {
+		- ContactRepository repo
+		+ execute() Iterable~Contact~
+	}
+
+	class DeleteContactUseCase {
+		- ContactRepository repo
+		- EventBus bus
+		+ execute(id)
+	}
+
+	class ContactRepository {
+		<<interface>>
+		+ get_by_id(id)
+		+ get_all()
+		+ save(contact)
+		+ delete(id)
+	}
+
+	class InMemoryContactRepository {
+		- _store: dict
+		+ get_by_id(id)
+		+ get_all()
+		+ save(contact)
+		+ delete(id)
+	}
+
+	class EventBus {
+		+ subscribe(event_name, callback)
+		+ publish(event_name, payload)
+	}
+
+	class Contact {
+		- id: str
+		- name: str
+		- email: str
+		- phone: str
+	}
+
+	CreateContactUseCase --> ContactRepository : uses
+	GetAllContactsUseCase --> ContactRepository : uses
+	DeleteContactUseCase --> ContactRepository : uses
+
+	InMemoryContactRepository ..|> ContactRepository : implements
+	CreateContactUseCase --> EventBus : publishes
+	DeleteContactUseCase --> EventBus : publishes
+	InMemoryContactRepository --> Contact : stores
+
+```
+
+Notes
+- The diagram focuses on structure and relationships. Implementation details
+  (thread-safety, data copying) are in the source modules.
+- Keeping `ContactRepository` as an interface allows swapping storage layers
+  without changing use cases or the EventBus.
+
 
 This module is intentionally minimal and framework-free so it can be embedded
 in different UI clients. Feel free to adapt and extend for your projects.
