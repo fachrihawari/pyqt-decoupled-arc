@@ -4,8 +4,6 @@ from PyQt6.QtWidgets import QApplication
 from pages.contact_list import ContactList
 from pages.contact_add import ContactAdd
 
-
-
 @component
 def MyApp(self):
   # route: 'list' or 'add'
