@@ -1,11 +1,12 @@
-from edifice import component, VBoxView, Label, Button
+from edifice import component, VBoxView, HBoxView, Label, Button
 
 @component
-def ContactList(self, contacts, navigate):
+def ContactList(self, contacts, navigate, on_delete=None):
   """Simple contact list page with improved styling.
 
-  contacts: list of dicts with keys 'name' and 'phone'
+  contacts: list of dicts with keys 'id', 'name', 'email', and 'phone'
   navigate: function(route) to change page
+  on_delete: optional function(contact_id) to delete a contact
   """
   # Single root element for this component
   with VBoxView(style={"padding": 20}):
@@ -33,17 +34,39 @@ def ContactList(self, contacts, navigate):
             "margin-bottom": 10,
           }
         ):
-          # Contact name - larger and bold
-          Label(
-            text=f"{c.get('name', 'Unnamed')}",
-            style={"font-size": "15px", "font-weight": "bold", "color": "#1a1a1a"}
-          )
-          
-          # Contact phone - smaller and gray
-          if c.get('phone'):
+          # Contact info section
+          with VBoxView():
+            # Contact name - larger and bold
             Label(
-              text=f"📞 {c.get('phone')}",
-              style={"margin-top": 4, "color": "#586069", "font-size": "13px"}
+              text=f"{c.get('name', 'Unnamed')}",
+              style={"font-size": "15px", "font-weight": "bold", "color": "#1a1a1a"}
+            )
+            
+            # Contact email
+            if c.get('email'):
+              Label(
+                text=f"✉️ {c.get('email')}",
+                style={"margin-top": 4, "color": "#586069", "font-size": "13px"}
+              )
+            
+            # Contact phone - smaller and gray
+            if c.get('phone'):
+              Label(
+                text=f"📞 {c.get('phone')}",
+                style={"margin-top": 2, "color": "#586069", "font-size": "13px"}
+              )
+          
+          # Delete button if callback provided
+          if on_delete and c.get('id'):
+            Button(
+              title="🗑️ Delete",
+              on_click=lambda _e, contact_id=c['id']: on_delete(contact_id),
+              style={
+                "margin-top": 8,
+                "padding": "6px 12px",
+                "font-size": "12px",
+                "background-color": "#dc3545",
+              }
             )
     
     # Add contact button at the bottom

@@ -8,6 +8,7 @@ def ContactAdd(self, on_save, navigate):
   navigate: function(route)
   """
   name, set_name = use_state("")
+  email, set_email = use_state("")
   phone, set_phone = use_state("")
 
   # Single root element for this component
@@ -29,12 +30,23 @@ def ContactAdd(self, on_save, navigate):
     ):
       # Name field
       Label(
-        text="Name",
+        text="Name *",
         style={"margin-bottom": 6, "font-weight": "bold", "color": "#1a1a1a"}
       )
       TextInput(
         name,
         on_change=set_name,
+        style={"margin-bottom": 16, "min-width": 300}
+      )
+
+      # Email field
+      Label(
+        text="Email *",
+        style={"margin-bottom": 6, "font-weight": "bold", "color": "#1a1a1a"}
+      )
+      TextInput(
+        email,
+        on_change=set_email,
         style={"margin-bottom": 16, "min-width": 300}
       )
 
@@ -50,11 +62,12 @@ def ContactAdd(self, on_save, navigate):
       )
 
       def save(_event=None):
-        if name.strip() == "":
+        if name.strip() == "" or email.strip() == "":
           return
-        on_save({"name": name, "phone": phone})
+        on_save({"name": name, "email": email, "phone": phone})
         # Clear fields after save
         set_name("")
+        set_email("")
         set_phone("")
         navigate("list")
 

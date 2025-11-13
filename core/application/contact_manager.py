@@ -29,7 +29,6 @@ class ContactManager:
 
     def create_contact(self, name: str, email: str, phone: str = "") -> Contact:
         result = self.create_uc.execute(name, email, phone)
-        self.event_bus.publish(CONTACT_CREATED, {"contact": result})
         return result
 
     def get_all_contacts(self) -> list[Contact]:
@@ -37,8 +36,6 @@ class ContactManager:
 
     def delete_contact(self, contact_id: str) -> bool:
         result = self.delete_uc.execute(contact_id)
-        if result:
-            self.event_bus.publish(CONTACT_DELETED, {"contact_id": contact_id})
         return result
 
     def subscribe_to_events(self, event_name: str, callback: Callable) -> Optional[Callable]:

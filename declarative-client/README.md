@@ -1,25 +1,41 @@
-# Contact Manager - PyQt6 + Edifice
+# Contact Manager - Declarative UI + Clean Architecture
 
-A simple contact management application built with PyQt6 and the Edifice framework, demonstrating reactive UI patterns with a clean, modern design.
+A contact management application demonstrating **Edifice's declarative/reactive UI** integrated with **Clean Architecture** principles. This shows how modern React-like patterns can work with domain-driven design without needing traditional MVVM.
 
 ## Features
 
 - 📋 **Contact List**: View all your contacts in a styled card layout
-- ➕ **Add Contact**: Form to add new contacts with name and phone
+- ➕ **Add Contact**: Form to add new contacts with name, email, and phone
+- 🗑️ **Delete Contact**: Remove contacts with a single click
 - 🎨 **Modern UI**: Clean, professional styling with proper spacing and colors
 - ⚡ **Reactive**: State-driven UI updates automatically when contacts change
 - 🧭 **Navigation**: Simple page routing between list and add views
+- 🏗️ **Clean Architecture**: UI decoupled from core business logic
+- 📡 **Event-Driven**: Domain events trigger automatic UI updates
 
 ## Project Structure
 
 ```
-mvvm-client/
-├── main.py                 # App entry point, routing, and state management
+declarative-client/
+├── main.py                 # App entry point, core integration, routing
 ├── pages/
 │   ├── contact_list.py    # Contact list page component
 │   └── contact_add.py     # Add contact form component
 ├── requirements.txt       # Python dependencies
-└── README.md             # This file
+├── README.md             # This file
+└── ARCHITECTURE.md       # Detailed architecture explanation
+
+../core/                   # Shared business logic module
+├── application/
+│   ├── contact_manager.py  # Application service facade
+│   └── use_cases.py        # Business use cases
+├── domain/
+│   ├── contact.py          # Domain entities
+│   └── events.py           # Domain events
+├── repository/
+│   └── contact_repository.py  # Repository interface
+└── event_bus/
+    └── event_bus.py        # Pub/sub event system
 ```
 
 ## Requirements
@@ -61,32 +77,60 @@ The application window will open with:
 
 ### Adding a Contact
 
-1. Click "➕ Add Contact" in the navigation bar
-2. Fill in the name (required) and phone number (optional)
-3. Click "💾 Save Contact" to add the contact
-4. The app will navigate back to the contact list automatically
+1. Click "➕ Add New Contact" button
+2. Fill in the name (required), email (required), and phone number (optional)
+3. Click "Save" to add the contact
+4. The app navigates back to the contact list automatically
+5. Domain event triggers and UI updates reactively
 
 ### Viewing Contacts
 
 - The contact list shows all saved contacts in card format
-- Each card displays the contact's name and phone number
+- Each card displays the contact's name, email, and phone number
 - If no contacts exist, a helpful message is displayed
-- Click the green "➕ Add New Contact" button at the bottom to add your first contact
+- Click "➕ Add New Contact" button at the bottom to add your first contact
+
+### Deleting a Contact
+
+1. Find the contact in the list
+2. Click the "🗑️ Delete" button on the contact card
+3. Contact is removed via core business logic
+4. UI updates automatically through domain events
 
 ## Architecture
 
-This app demonstrates the MVVM (Model-View-ViewModel) pattern using Edifice:
+This app demonstrates **Clean Architecture with Declarative UI** - **NO traditional MVVM needed**! 
 
-- **Model**: Simple dictionary-based contact data
-- **View**: Declarative UI components in `pages/`
-- **ViewModel**: State management and navigation logic in `main.py`
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed explanation of why MVVM is unnecessary with Edifice.
+
+### Three-Layer Architecture
+
+1. **Core Layer** (`../core/`)
+   - Domain models and business rules
+   - Use cases (application logic)
+   - Repository pattern for data access
+   - Event bus for reactive updates
+   - **100% UI-agnostic**
+
+2. **Adapter Layer** (`main.py` functions)
+   - Simple functions bridging UI ↔ Core
+   - Data transformation (domain models ↔ UI dicts)
+   - Event subscription setup
+   - **Thin integration layer**
+
+3. **UI Layer** (Edifice components)
+   - Declarative components with `@component`
+   - State management via `use_state()` hooks
+   - Reactive rendering (automatic updates)
+   - **Replaces ViewModel functionality**
 
 ### Key Concepts
 
-- **Components**: Reusable UI components decorated with `@component`
-- **State Management**: Using `use_state()` hooks for reactive state
-- **Declarative UI**: Context managers (`with VBoxView():`) for layout
-- **Props**: Passing data and callbacks between components
+- **No ViewModel Classes**: Edifice components manage state directly with hooks
+- **Event-Driven Updates**: Domain events automatically refresh UI
+- **One-Way Data Flow**: Props down, events up
+- **Separation**: Core can be tested/reused independently
+- **Simplicity**: Fewer layers than traditional MVVM
 
 ## Styling
 
