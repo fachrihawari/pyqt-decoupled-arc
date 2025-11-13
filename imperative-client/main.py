@@ -1,4 +1,6 @@
 import sys
+sys.path.insert(0, '../')
+
 from PyQt6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QTableWidget, QTableWidgetItem, QHeaderView, QPushButton
 from PyQt6.QtCore import Qt
 import random
@@ -16,6 +18,7 @@ class ContactApp(QWidget):
         self.manager.seed_data()
 
         self.table = None  # Store reference to the table
+
         self.render()
 
     def _render_title(self):
@@ -31,16 +34,18 @@ class ContactApp(QWidget):
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         return table
+    
+    def _render_row(self, contact):
+        # Set Row Count to accommodate new row if necessary
+        next_row = self.table.rowCount()
+        print(f"Adding row {next_row} for contact {contact}")
+        self.table.setRowCount(next_row + 1)
 
-    def _refresh_table(self):
-        """Refresh the existing table with updated contacts."""
-        contacts = self.manager.get_all_contacts()
-        self.table.setRowCount(len(contacts))
-        for row, contact in enumerate(contacts):
-            self.table.setItem(row, 0, QTableWidgetItem(contact.id))
-            self.table.setItem(row, 1, QTableWidgetItem(contact.name))
-            self.table.setItem(row, 2, QTableWidgetItem(contact.email))
-            self.table.setItem(row, 3, QTableWidgetItem(contact.phone))
+        # Set items in the row
+        self.table.setItem(next_row, 0, QTableWidgetItem(str(contact.id)))
+        self.table.setItem(next_row, 1, QTableWidgetItem(contact.name))
+        self.table.setItem(next_row, 2, QTableWidgetItem(contact.email))
+        self.table.setItem(next_row, 3, QTableWidgetItem(contact.phone))
 
     def _render_add_button(self):
         def add_random_contact():
@@ -48,9 +53,6 @@ class ContactApp(QWidget):
             email = f"{name.lower()}@example.com"
             phone = f"+1-555-{random.randint(1000,9999)}"
             self.manager.create_contact(name, email, phone)
-            # add_layout = QVBoxLayout()
-            # add_layout.addWidget(QLabel("Add Random Contact Clicked"))
-            # self.setLayout(add_layout)
 
         button = QPushButton("Add Random Contact")
         button.clicked.connect(add_random_contact)
@@ -73,7 +75,10 @@ class ContactApp(QWidget):
         # Render table
         self.table = self._render_table()
         layout.addWidget(self.table)
-        self._refresh_table()  # Initial population of the table
+
+        # Initial data population
+        for contact in self.manager.get_all_contacts():
+            self._render_row(contact)
 
         # Render add random contact button
         add_button = self._render_add_button()
@@ -82,9 +87,7 @@ class ContactApp(QWidget):
         # Set main layout
         self.setLayout(layout)
 
-
-        # Set listeners for data changes
-        self.manager.subscribe_to_events(CONTACT_CREATED, lambda data: self._refresh_table())
+        self.manager.subscribe_to_events(CONTACT_CREATED, self._render_row)
 
 
 if __name__ == "__main__":

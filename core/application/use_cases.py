@@ -15,7 +15,7 @@ class CreateContactUseCase:
         contact = Contact(name=name, email=email, phone=phone)
         saved = self._repo.save(contact)
         # publish event
-        self._bus.publish(CONTACT_CREATED, {"contact": saved})
+        self._bus.publish(CONTACT_CREATED, saved)
         return saved
 
 
