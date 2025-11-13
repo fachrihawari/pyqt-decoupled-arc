@@ -1,13 +1,25 @@
-from edifice import component, VBoxView, HBoxView, Label, Button
+from edifice import component, VBoxView, Label, Button
+import sys
+sys.path.insert(0, '../')
+from contexts.contact_manager import use_contact_manager
 
 @component
-def ContactList(self, contacts, navigate, on_delete=None):
+def ContactList(self, navigate):
   """Simple contact list page with improved styling.
-
-  contacts: list of dicts with keys 'id', 'name', 'email', and 'phone'
+  
+  This component is self-contained and manages its own data and actions.
+  
   navigate: function(route) to change page
-  on_delete: optional function(contact_id) to delete a contact
   """
+  # Get global manager and contacts
+  manager, contacts = use_contact_manager()
+  
+  def delete_contact(contact_id):
+    """Delete contact through core business logic"""
+    try:
+      manager.delete_contact(contact_id)
+    except Exception as e:
+      print(f"Error deleting contact: {e}")
   # Single root element for this component
   with VBoxView(style={"padding": 20}):
     # Page title with larger font and bold styling
@@ -56,11 +68,11 @@ def ContactList(self, contacts, navigate, on_delete=None):
                 style={"margin-top": 2, "color": "#586069", "font-size": "13px"}
               )
           
-          # Delete button if callback provided
-          if on_delete and c.get('id'):
+          # Delete button
+          if c.get('id'):
             Button(
               title="🗑️ Delete",
-              on_click=lambda _e, contact_id=c['id']: on_delete(contact_id),
+              on_click=lambda _e, contact_id=c['id']: delete_contact(contact_id),
               style={
                 "margin-top": 8,
                 "padding": "6px 12px",

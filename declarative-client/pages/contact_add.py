@@ -1,12 +1,19 @@
 from edifice import component, Button, HBoxView, VBoxView, Label, TextInput, use_state
+import sys
+sys.path.insert(0, '../')
+from contexts.contact_manager import use_contact_manager_only
 
 @component
-def ContactAdd(self, on_save, navigate):
+def ContactAdd(self, navigate):
   """Contact add page with form styling.
-
-  on_save: function(new_contact_dict)
-  navigate: function(route)
+  
+  This component is self-contained and handles its own business logic.
+  
+  navigate: function(route) to change page
   """
+  # Get global manager
+  manager = use_contact_manager_only()
+  
   name, set_name = use_state("")
   email, set_email = use_state("")
   phone, set_phone = use_state("")
@@ -64,12 +71,21 @@ def ContactAdd(self, on_save, navigate):
       def save(_event=None):
         if name.strip() == "" or email.strip() == "":
           return
-        on_save({"name": name, "email": email, "phone": phone})
-        # Clear fields after save
-        set_name("")
-        set_email("")
-        set_phone("")
-        navigate("list")
+        
+        # Call the core business logic directly
+        try:
+          manager.create_contact(
+            name=name.strip(),
+            email=email.strip(),
+            phone=phone.strip()
+          )
+          # Clear fields after save
+          set_name("")
+          set_email("")
+          set_phone("")
+          navigate("list")
+        except Exception as e:
+          print(f"Error creating contact: {e}")
 
       # Action buttons - spacing with margin instead of gap
       with HBoxView():
